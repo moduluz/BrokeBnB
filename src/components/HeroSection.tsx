@@ -1,9 +1,18 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
 
 const HeroSection = () => {
   const [activeTab, setActiveTab] = useState<"buy" | "rent" | "sell">("buy");
+  const navigate = useNavigate();
+
+  const handleTabChange = (tab: "buy" | "rent" | "sell") => {
+    setActiveTab(tab);
+    if (tab === "sell") {
+      navigate("/sell");
+    }
+  };
 
   return (
     <div className="relative">
@@ -28,7 +37,7 @@ const HeroSection = () => {
                   ? "bg-white text-realestate-700" 
                   : "text-white hover:bg-white/20"
               }`}
-              onClick={() => setActiveTab("buy")}
+              onClick={() => handleTabChange("buy")}
             >
               Buy
             </button>
@@ -38,7 +47,7 @@ const HeroSection = () => {
                   ? "bg-white text-realestate-700" 
                   : "text-white hover:bg-white/20"
               }`}
-              onClick={() => setActiveTab("rent")}
+              onClick={() => handleTabChange("rent")}
             >
               Rent
             </button>
@@ -48,7 +57,7 @@ const HeroSection = () => {
                   ? "bg-white text-realestate-700" 
                   : "text-white hover:bg-white/20"
               }`}
-              onClick={() => setActiveTab("sell")}
+              onClick={() => handleTabChange("sell")}
             >
               Sell
             </button>
@@ -56,9 +65,11 @@ const HeroSection = () => {
         </div>
         
         {/* Search Bar with Active Tab */}
-        <div className="mt-8">
-          <SearchBar activeTab={activeTab} />
-        </div>
+        {activeTab !== "sell" && (
+          <div className="mt-8">
+            <SearchBar activeTab={activeTab} />
+          </div>
+        )}
       </div>
     </div>
   );

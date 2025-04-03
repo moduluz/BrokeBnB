@@ -10,6 +10,7 @@ import RentSettlement from "./pages/RentSettlement";
 import SignIn from "./pages/SignIn";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
+import SellProperty from "./pages/SellProperty";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/signin" element={<SignIn />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/sell" element={<SellProperty />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
