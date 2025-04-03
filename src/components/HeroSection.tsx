@@ -1,7 +1,10 @@
 
+import { useState } from "react";
 import SearchBar from "./SearchBar";
 
 const HeroSection = () => {
+  const [activeTab, setActiveTab] = useState<"buy" | "rent" | "sell">("buy");
+
   return (
     <div className="relative">
       {/* Hero Background */}
@@ -19,21 +22,42 @@ const HeroSection = () => {
           
           {/* Property Type Tabs */}
           <div className="inline-flex rounded-lg bg-white/10 p-1 mb-10">
-            <button className="px-6 py-3 rounded-md bg-white text-realestate-700 font-medium">
+            <button 
+              className={`px-6 py-3 rounded-md font-medium transition-all ${
+                activeTab === "buy" 
+                  ? "bg-white text-realestate-700" 
+                  : "text-white hover:bg-white/20"
+              }`}
+              onClick={() => setActiveTab("buy")}
+            >
               Buy
             </button>
-            <button className="px-6 py-3 rounded-md text-white font-medium">
+            <button 
+              className={`px-6 py-3 rounded-md font-medium transition-all ${
+                activeTab === "rent" 
+                  ? "bg-white text-realestate-700" 
+                  : "text-white hover:bg-white/20"
+              }`}
+              onClick={() => setActiveTab("rent")}
+            >
               Rent
             </button>
-            <button className="px-6 py-3 rounded-md text-white font-medium">
+            <button 
+              className={`px-6 py-3 rounded-md font-medium transition-all ${
+                activeTab === "sell" 
+                  ? "bg-white text-realestate-700" 
+                  : "text-white hover:bg-white/20"
+              }`}
+              onClick={() => setActiveTab("sell")}
+            >
               Sell
             </button>
           </div>
         </div>
         
-        {/* Search Bar */}
+        {/* Search Bar with Active Tab */}
         <div className="mt-8">
-          <SearchBar />
+          <SearchBar activeTab={activeTab} />
         </div>
       </div>
     </div>
