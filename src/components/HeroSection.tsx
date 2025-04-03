@@ -1,16 +1,43 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import SearchBar from "./SearchBar";
 
 const HeroSection = () => {
   const [activeTab, setActiveTab] = useState<"buy" | "rent" | "sell">("buy");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Set the active tab based on the URL query parameter
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get("tab");
+    
+    if (tabParam === "buy" || tabParam === "rent" || tabParam === "sell") {
+      setActiveTab(tabParam);
+      
+      // Auto-navigate to sell page if tab is sell
+      if (tabParam === "sell" && location.pathname !== "/sell") {
+        navigate("/sell");
+      }
+    }
+  }, [location, navigate]);
 
   const handleTabChange = (tab: "buy" | "rent" | "sell") => {
     setActiveTab(tab);
+    
+    // Update URL with the active tab
+    const params = new URLSearchParams(location.search);
+    params.set("tab", tab);
+    
     if (tab === "sell") {
       navigate("/sell");
+    } else {
+      // Stay on current page but update query param
+      navigate({
+        pathname: location.pathname,
+        search: params.toString()
+      });
     }
   };
 

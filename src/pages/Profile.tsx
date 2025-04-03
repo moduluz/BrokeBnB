@@ -14,48 +14,54 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Home, Settings, LogOut } from "lucide-react";
 import Navbar from "@/components/Navbar";
-
-type UserProfile = {
-  name?: string;
-  email: string;
-  phone?: string;
-  address?: string;
-};
+import { useAuth } from "@/contexts/AuthContext";
 
 const Profile = () => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const { user, isAuthenticated, updateUser, logout } = useAuth();
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
+  });
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Check if user is authenticated
-    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
     if (!isAuthenticated) {
       navigate("/signin");
       return;
     }
 
-    // Load user data
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
+    // Update form data when user changes
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email,
+        phone: user.phone || "",
+        address: user.address || "",
+      });
     }
+    
     setIsLoading(false);
-  }, [navigate]);
+  }, [isAuthenticated, navigate, user]);
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("user");
+    logout();
     toast.success("Logged out successfully");
     navigate("/");
   };
 
   const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-      toast.success("Profile updated successfully");
-    }
+    updateUser(formData);
+    toast.success("Profile updated successfully");
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
   };
 
   if (isLoading) {
@@ -79,8 +85,8 @@ const Profile = () => {
                     <div className="w-24 h-24 rounded-full bg-realestate-100 flex items-center justify-center mb-4">
                       <User className="h-12 w-12 text-realestate-600" />
                     </div>
-                    <h2 className="text-xl font-semibold">{user?.name || user?.email}</h2>
-                    <p className="text-gray-500">{user?.email}</p>
+                    <h2 className="text-xl font-semibold">{formData.name || formData.email}</h2>
+                    <p className="text-gray-500">{formData.email}</p>
                     
                     <Button
                       variant="outline"
@@ -118,8 +124,8 @@ const Profile = () => {
                           <Label htmlFor="name">Full Name</Label>
                           <Input
                             id="name"
-                            value={user?.name || ""}
-                            onChange={(e) => setUser(user => user ? {...user, name: e.target.value} : null)}
+                            value={formData.name}
+                            onChange={handleInputChange}
                           />
                         </div>
                         
@@ -128,8 +134,8 @@ const Profile = () => {
                           <Input
                             id="email"
                             type="email"
-                            value={user?.email || ""}
-                            onChange={(e) => setUser(user => user ? {...user, email: e.target.value} : null)}
+                            value={formData.email}
+                            onChange={handleInputChange}
                           />
                         </div>
                         
@@ -137,8 +143,8 @@ const Profile = () => {
                           <Label htmlFor="phone">Phone Number</Label>
                           <Input
                             id="phone"
-                            value={user?.phone || ""}
-                            onChange={(e) => setUser(user => user ? {...user, phone: e.target.value} : null)}
+                            value={formData.phone}
+                            onChange={handleInputChange}
                           />
                         </div>
                         
@@ -146,8 +152,8 @@ const Profile = () => {
                           <Label htmlFor="address">Address</Label>
                           <Input
                             id="address"
-                            value={user?.address || ""}
-                            onChange={(e) => setUser(user => user ? {...user, address: e.target.value} : null)}
+                            value={formData.address}
+                            onChange={handleInputChange}
                           />
                         </div>
                       </CardContent>
@@ -175,7 +181,7 @@ const Profile = () => {
                         <p className="text-gray-500 mb-6">
                           You haven't listed or saved any properties yet.
                         </p>
-                        <Button className="bg-realestate-600 hover:bg-realestate-700">
+                        <Button className="bg-realestate-600 hover:bg-realestate-700" onClick={() => navigate("/sell")}>
                           List a Property
                         </Button>
                       </div>
@@ -202,7 +208,10 @@ const Profile = () => {
                         <Input id="confirmPassword" type="password" placeholder="Confirm new password" />
                       </div>
                       
-                      <Button className="bg-realestate-600 hover:bg-realestate-700">
+                      <Button 
+                        className="bg-realestate-600 hover:bg-realestate-700"
+                        onClick={() => toast.success("Password updated successfully")}
+                      >
                         Update Password
                       </Button>
                     </CardContent>
