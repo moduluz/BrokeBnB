@@ -1,5 +1,5 @@
-
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { 
   Bath, 
@@ -12,309 +12,318 @@ import {
   Home, 
   MapPin, 
   Maximize2, 
-  Share2 
+  Share2,
+  Loader2,
+  Square,
+  DollarSign,
+  Building
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
-import { PropertyCardProps } from "@/components/PropertyCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
 
-// Mock property data - in a real app, you would fetch this from an API
-const propertyData: Record<string, PropertyCardProps & { 
+interface Property {
+  _id: string;
+  title: string;
   description: string;
-  features: string[];
-  images: string[];
-}> = {
-  "1": {
-    id: "1",
-    title: "Modern Apartment in Downtown",
-    address: "123 Main St, New York, NY 10001",
-    price: 850000,
-    bedrooms: 2,
-    bathrooms: 2,
-    area: 1200,
-    imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80",
-    propertyType: "Apartment",
-    listingType: "sale",
-    description: "This beautiful modern apartment is located in the heart of downtown. The property features an open concept design with high-end finishes throughout. The kitchen is equipped with stainless steel appliances and quartz countertops. Large windows offer abundant natural light and stunning city views. The building offers amenities including a gym, rooftop terrace, and 24-hour concierge.",
-    features: [
-      "Hardwood flooring",
-      "Central air conditioning",
-      "In-unit washer and dryer",
-      "Stainless steel appliances",
-      "Walk-in closets",
-      "Balcony",
-      "Pet-friendly building",
-      "Fitness center access",
-      "Rooftop terrace"
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80",
-      "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80",
-      "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2787&q=80"
-    ]
-  },
-  "2": {
-    id: "2",
-    title: "Luxury Condo with Ocean View",
-    address: "456 Ocean Ave, Miami, FL 33139",
-    price: 1250000,
-    bedrooms: 3,
-    bathrooms: 3.5,
-    area: 2100,
-    imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80",
-    propertyType: "Condo",
-    listingType: "sale",
-    description: "Stunning luxury condo with breathtaking ocean views. This property features an open floor plan with floor-to-ceiling windows showcasing panoramic ocean vistas. The gourmet kitchen includes top-of-the-line appliances and marble countertops. The primary suite offers a spa-like bathroom and walk-in closet. The unit comes with two assigned parking spaces and access to building amenities including a pool, fitness center, and concierge service.",
-    features: [
-      "Ocean views",
-      "Marble flooring",
-      "Smart home technology",
-      "Wine refrigerator",
-      "Custom cabinetry",
-      "Private balcony",
-      "Pool and spa access",
-      "Private beach access",
-      "24/7 security"
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80",
-      "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80",
-      "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80"
-    ]
-  },
-  // More properties would be defined here...
-};
+  price: number;
+  location: {
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
+  propertyType: string;
+  bedrooms: number;
+  bathrooms: number;
+  amenities: string[];
+  images?: Array<{
+    url: string;
+    public_id: string;
+  }>;
+  owner: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const PropertyDetails = () => {
   const { id } = useParams();
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  
-  // Get property data based on ID
-  const property = id && propertyData[id] ? propertyData[id] : null;
-  
-  // If property not found, show error message
-  if (!property) {
+  const navigate = useNavigate();
+  const { token, user } = useAuth();
+  const { toast } = useToast();
+  const [property, setProperty] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchProperty = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/rent/${id}`);
+        if (!response.ok) {
+          throw new Error("Property not found");
+        }
+        const data = await response.json();
+        setProperty(data);
+      } catch (error) {
+        console.error("Error fetching property:", error);
+        toast({
+          variant: "destructive",
+          description: "Failed to load property details",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperty();
+  }, [id]);
+
+  const handleDelete = async () => {
+    if (!token) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to delete this property.",
+        variant: "destructive",
+      });
+      navigate("/signin");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/rent/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete property");
+      }
+
+      toast({
+        title: "Success",
+        description: "Property deleted successfully",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting property:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete property",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const nextImage = () => {
+    if (property?.images && property.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % property.images!.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (property?.images && property.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + property.images!.length) % property.images!.length);
+    }
+  };
+
+  if (loading) {
     return (
-      <div>
-        <Navbar />
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Property Not Found</h1>
-          <p className="text-gray-600 mb-8">The property you're looking for doesn't exist or has been removed.</p>
-          <Button asChild>
-            <a href="/">Return to Home</a>
-          </Button>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-realestate-600"></div>
       </div>
     );
   }
-  
-  // Format price with commas and dollar sign
-  const formattedPrice = property.price.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  });
-  
-  // Handle image navigation
-  const nextImage = () => {
-    setActiveImageIndex((prevIndex) => 
-      prevIndex === property.images.length - 1 ? 0 : prevIndex + 1
+
+  if (!property) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6">
+            <p className="text-center text-gray-600">Property not found</p>
+          </CardContent>
+        </Card>
+      </div>
     );
-  };
-  
-  const prevImage = () => {
-    setActiveImageIndex((prevIndex) => 
-      prevIndex === 0 ? property.images.length - 1 : prevIndex - 1
-    );
-  };
+  }
 
   return (
-    <div>
-      <Navbar />
-      
-      <main className="pb-16">
-        {/* Property Image Gallery */}
-        <div className="relative h-[60vh] bg-gray-200">
-          <img 
-            src={property.images[activeImageIndex]} 
-            alt={property.title}
-            className="w-full h-full object-cover"
-          />
-          
-          {/* Image Navigation Buttons */}
-          <button 
-            onClick={prevImage}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          
-          <button 
-            onClick={nextImage}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-          
-          {/* Image Indicators */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-            {property.images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveImageIndex(index)}
-                className={`h-2 w-2 rounded-full ${
-                  index === activeImageIndex ? 'bg-white' : 'bg-white/50'
-                }`}
-              />
-            ))}
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-10">
+        <Button
+          variant="ghost"
+          className="mb-6"
+          onClick={() => navigate(-1)}
+        >
+          <ChevronLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Image Gallery */}
+          <div className="relative">
+            {property.images && property.images.length > 0 ? (
+              <>
+                <img
+                  src={property.images[currentImageIndex].url}
+                  alt={property.title}
+                  className="w-full h-96 object-cover rounded-lg"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://via.placeholder.com/800x600?text=No+Image';
+                  }}
+                />
+                {property.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </button>
+                  </>
+                )}
+                <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                  {property.images.map((image, index) => (
+                    <button
+                      key={image.public_id}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden ${
+                        currentImageIndex === index ? "ring-2 ring-realestate-600" : ""
+                      }`}
+                    >
+                      <img
+                        src={image.url}
+                        alt={`${property.title} - ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://via.placeholder.com/200x200?text=No+Image';
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
+                <p className="text-gray-500">No images available</p>
+              </div>
+            )}
           </div>
-          
-          {/* Action Buttons */}
-          <div className="absolute top-4 right-4 flex space-x-2">
-            <Button variant="outline" size="icon" className="bg-white/80 hover:bg-white">
-              <Heart className="h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="icon" className="bg-white/80 hover:bg-white">
-              <Share2 className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-        
-        <div className="container mx-auto px-4 mt-8">
-          {/* Property Header */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6">
+
+          {/* Property Details */}
+          <div className="space-y-6">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
-              <div className="flex items-center text-gray-600 mb-2">
-                <MapPin className="h-5 w-5 mr-1 flex-shrink-0" />
-                <span>{property.address}</span>
-              </div>
-              
-              <div className="flex flex-wrap gap-4 mt-3">
-                <div className="flex items-center">
-                  <Bed className="h-5 w-5 mr-2 text-gray-500" />
-                  <span className="font-medium">{property.bedrooms} Bedrooms</span>
-                </div>
-                <div className="flex items-center">
-                  <Bath className="h-5 w-5 mr-2 text-gray-500" />
-                  <span className="font-medium">{property.bathrooms} Bathrooms</span>
-                </div>
-                <div className="flex items-center">
-                  <Maximize2 className="h-5 w-5 mr-2 text-gray-500" />
-                  <span className="font-medium">{property.area} sq ft</span>
-                </div>
-                <div className="flex items-center">
-                  <Home className="h-5 w-5 mr-2 text-gray-500" />
-                  <span className="font-medium">{property.propertyType}</span>
-                </div>
+              <h1 className="text-3xl font-bold">{property.title}</h1>
+              <p className="text-gray-600 mt-2">{property.description}</p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center text-gray-600">
+                <MapPin className="h-5 w-5 mr-2" />
+                <span>
+                  {property.location?.address}, {property.location?.city},{" "}
+                  {property.location?.state} {property.location?.zipCode}
+                </span>
               </div>
             </div>
-            
-            <div className="mt-4 md:mt-0 md:text-right">
-              <div className="text-3xl font-bold text-realestate-600 mb-2">
-                {formattedPrice}
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex items-center">
+                <DollarSign className="h-5 w-5 mr-2 text-gray-600" />
+                <span className="text-lg font-semibold">
+                  ${property.price?.toLocaleString() || 0}/mo
+                </span>
               </div>
-              <div className="text-gray-600">
-                {property.listingType === "sale" ? "For Sale" : "For Rent"}
+              <div className="flex items-center">
+                <Bed className="h-5 w-5 mr-2 text-gray-600" />
+                <span>{property.bedrooms || 0} beds</span>
               </div>
-              
-              <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                <Button className="bg-realestate-600 hover:bg-realestate-700">
-                  Contact Agent
-                </Button>
-                <Button variant="outline" className="border-realestate-600 text-realestate-600 hover:bg-realestate-50">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Schedule Tour
-                </Button>
+              <div className="flex items-center">
+                <Bath className="h-5 w-5 mr-2 text-gray-600" />
+                <span>{property.bathrooms || 0} baths</span>
+              </div>
+              <div className="flex items-center">
+                <Building className="h-5 w-5 mr-2 text-gray-600" />
+                <span>{property.propertyType || 'N/A'}</span>
               </div>
             </div>
-          </div>
-          
-          {/* Property Details Tabs */}
-          <Tabs defaultValue="overview" className="mt-8">
-            <TabsList className="mb-6">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="features">Features</TabsTrigger>
-              <TabsTrigger value="location">Location</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="overview" className="mt-0">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-xl font-semibold mb-4">Property Description</h3>
-                <p className="text-gray-700 whitespace-pre-line">
-                  {property.description}
-                </p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="features" className="mt-0">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-xl font-semibold mb-4">Property Features</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {property.features.map((feature, index) => (
-                    <div key={index} className="flex items-start">
-                      <Check className="h-5 w-5 text-realestate-600 mr-2 mt-0.5" />
-                      <span className="text-gray-700">{feature}</span>
-                    </div>
+
+            {property.amenities && property.amenities.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Amenities</h3>
+                <div className="flex flex-wrap gap-2">
+                  {property.amenities.map((amenity, index) => (
+                    <span
+                      key={index}
+                      className="bg-gray-100 px-3 py-1 rounded-full text-sm"
+                    >
+                      {amenity}
+                    </span>
                   ))}
                 </div>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="location" className="mt-0">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-xl font-semibold mb-4">Location</h3>
-                {/* In a real app, you would embed a map here */}
-                <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500">Map view would be displayed here</p>
+            )}
+
+            <div className="pt-4">
+              <Button
+                className="w-full bg-realestate-600 hover:bg-realestate-700"
+                onClick={() => {
+                  if (!token) {
+                    toast({
+                      variant: "destructive",
+                      description: "Please sign in to contact the owner.",
+                    });
+                    navigate("/signin");
+                    return;
+                  }
+                  // TODO: Implement contact owner functionality
+                  toast({
+                    description: "This feature will be implemented soon.",
+                  });
+                }}
+              >
+                Contact Owner
+              </Button>
+
+              {token && user && property.owner?._id === user._id && (
+                <div className="mt-4 space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => navigate(`/edit-property/${property._id}`)}
+                  >
+                    Edit Property
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={handleDelete}
+                  >
+                    Delete Property
+                  </Button>
                 </div>
-                <div className="mt-4">
-                  <h4 className="font-medium mb-2">Nearby Amenities</h4>
-                  <ul className="list-disc list-inside text-gray-700">
-                    <li>Public Transportation - 0.2 miles</li>
-                    <li>Grocery Store - 0.4 miles</li>
-                    <li>Schools - 0.7 miles</li>
-                    <li>Parks - 0.5 miles</li>
-                    <li>Restaurants - 0.3 miles</li>
-                  </ul>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-          
-          {/* Contact Section */}
-          <div className="mt-10 bg-gray-50 rounded-lg p-6 shadow-sm">
-            <h3 className="text-xl font-semibold mb-4">Interested in this property?</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <p className="text-gray-700 mb-4">
-                  Contact our agent to learn more about this property or to schedule a viewing.
-                </p>
-                <Button className="bg-realestate-600 hover:bg-realestate-700 w-full md:w-auto">
-                  Contact Agent
-                </Button>
-              </div>
-              
-              <div className="flex items-center bg-white p-4 rounded-lg">
-                <div className="flex-shrink-0 mr-4">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden">
-                    {/* Agent photo would go here */}
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium">John Smith</h4>
-                  <p className="text-gray-600 text-sm">Real Estate Agent</p>
-                  <p className="text-gray-600 text-sm">License #: 12345678</p>
-                  <p className="text-realestate-600 text-sm">(123) 456-7890</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
-      </main>
-      
-      {/* Footer would be here (same as in Index.tsx) */}
+      </div>
     </div>
   );
 };

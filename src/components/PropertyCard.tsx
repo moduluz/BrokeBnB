@@ -1,110 +1,100 @@
-
-import { useState } from "react";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MapPin, Bed, Bath, Building, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Bath, Bed, Home, MapPin, Maximize2 } from "lucide-react";
 
-export interface PropertyCardProps {
-  id: string;
+interface Property {
+  _id: string;
   title: string;
-  address: string;
+  description: string;
   price: number;
-  pricePerMonth?: number;
+  location: {
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
+  propertyType: string;
   bedrooms: number;
   bathrooms: number;
-  area: number;
-  imageUrl: string;
-  propertyType: string;
-  listingType: "sale" | "rent";
+  amenities: string[];
+  images?: Array<{
+    url: string;
+    public_id: string;
+  }>;
+  status: string;
 }
 
-const PropertyCard = ({ 
-  id,
-  title, 
-  address, 
-  price, 
-  pricePerMonth,
-  bedrooms, 
-  bathrooms, 
-  area, 
-  imageUrl, 
-  propertyType,
-  listingType 
-}: PropertyCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
+interface PropertyCardProps {
+  property: Property;
+}
 
-  // Format price with commas and dollar sign
-  const formattedPrice = price.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  });
-
-  // Format price per month if it exists
-  const formattedPricePerMonth = pricePerMonth?.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  });
+const PropertyCard = ({ property }: PropertyCardProps) => {
+  if (!property) {
+    return null;
+  }
 
   return (
-    <Link to={`/property/${id}`}>
-      <Card 
-        className="property-card overflow-hidden h-full"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {/* Property Image */}
-        <div className="relative h-48 overflow-hidden">
-          <img 
-            src={imageUrl} 
-            alt={title}
-            className={`w-full h-full object-cover transition-transform duration-700 ease-in-out ${isHovered ? 'scale-110' : 'scale-100'}`}
+    <Card className="overflow-hidden">
+      <div className="relative">
+        {property.images && property.images.length > 0 ? (
+          <img
+            src={property.images[0].url}
+            alt={property.title}
+            className="w-full h-48 object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+            }}
           />
-          <Badge 
-            className={`absolute top-3 left-3 ${
-              listingType === 'sale' ? 'bg-realestate-600' : 'bg-amber-500'
-            }`}
-          >
-            {listingType === 'sale' ? 'For Sale' : 'For Rent'}
-          </Badge>
-          <Badge className="absolute top-3 right-3 bg-gray-800/80">{propertyType}</Badge>
+        ) : (
+          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+            <p className="text-gray-500">No image available</p>
+          </div>
+        )}
+        {property.status === "rented" && (
+          <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+            Rented
+          </div>
+        )}
+      </div>
+      <CardHeader>
+        <h3 className="text-lg font-semibold truncate">{property.title}</h3>
+        <div className="flex items-center text-gray-600">
+          <MapPin className="h-4 w-4 mr-1" />
+          <span className="text-sm truncate">
+            {property.location?.city}, {property.location?.state}
+          </span>
         </div>
-        
-        <CardContent className="pt-4">
-          <div className="mb-2">
-            {listingType === 'sale' ? (
-              <h3 className="text-xl font-bold text-gray-800">{formattedPrice}</h3>
-            ) : (
-              <h3 className="text-xl font-bold text-gray-800">{formattedPricePerMonth}/mo</h3>
-            )}
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center">
+            <DollarSign className="h-4 w-4 mr-1 text-gray-600" />
+            <span className="font-semibold">
+              ${property.price?.toLocaleString() || 0}/mo
+            </span>
           </div>
-          
-          <h2 className="text-lg font-semibold line-clamp-1">{title}</h2>
-          
-          <div className="flex items-center mt-1 text-gray-500">
-            <MapPin className="h-4 w-4 mr-1 text-gray-400" />
-            <p className="text-sm line-clamp-1">{address}</p>
+          <div className="flex items-center">
+            <Bed className="h-4 w-4 mr-1 text-gray-600" />
+            <span>{property.bedrooms || 0} beds</span>
           </div>
-          
-          <div className="flex justify-between mt-4">
-            <div className="flex items-center">
-              <Bed className="h-4 w-4 mr-1 text-gray-500" />
-              <span className="text-sm text-gray-700">{bedrooms} Beds</span>
-            </div>
-            <div className="flex items-center">
-              <Bath className="h-4 w-4 mr-1 text-gray-500" />
-              <span className="text-sm text-gray-700">{bathrooms} Baths</span>
-            </div>
-            <div className="flex items-center">
-              <Maximize2 className="h-4 w-4 mr-1 text-gray-500" />
-              <span className="text-sm text-gray-700">{area} sq ft</span>
-            </div>
+          <div className="flex items-center">
+            <Bath className="h-4 w-4 mr-1 text-gray-600" />
+            <span>{property.bathrooms || 0} baths</span>
           </div>
-        </CardContent>
-      </Card>
-    </Link>
+          <div className="flex items-center">
+            <Building className="h-4 w-4 mr-1 text-gray-600" />
+            <span>{property.propertyType || 'N/A'}</span>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button asChild className="w-full">
+          <Link to={`/property/${property._id}`}>View Details</Link>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

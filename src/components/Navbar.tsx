@@ -1,28 +1,21 @@
-
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home, User, DollarSign, Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // Check auth status on component mount
-  useEffect(() => {
-    const authStatus = localStorage.getItem("isAuthenticated") === "true";
-    setIsLoggedIn(authStatus);
-  }, []);
+  const { isAuthenticated, logout, user } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("user");
-    setIsLoggedIn(false);
-    window.location.href = "/";
+    logout();
+    navigate("/");
   };
 
   return (
@@ -52,12 +45,15 @@ const Navbar = () => {
               Rent Settlement
             </Link>
             
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600 hidden lg:inline">
+                   Welcome, {user?.name || user?.email}
+                </span>
                 <Link to="/profile">
                   <Button variant="outline" className="flex items-center gap-2">
                     <User size={18} />
-                    <span>My Profile</span>
+                    <span className="hidden sm:inline">My Profile</span>
                   </Button>
                 </Link>
                 <Button 
@@ -130,8 +126,11 @@ const Navbar = () => {
               Rent Settlement
             </Link>
             
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <>
+               <span className="block text-sm text-gray-500 py-2">
+                    Welcome, {user?.name || user?.email}
+               </span>
                 <Link 
                   to="/profile" 
                   className="block text-gray-700 hover:text-realestate-600 font-medium py-2"

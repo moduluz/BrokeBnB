@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -7,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Navbar from "@/components/Navbar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -14,35 +14,53 @@ const SignIn = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
   
   // Redirect if already logged in
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
     if (isAuthenticated) {
       navigate("/profile");
     }
-  }, [navigate]);
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // This is a mock login. In a real app, you would validate with a backend
-      console.log("Logging in with:", { email, password, rememberMe });
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful login
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify({ email }));
-      
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Login failed. Please check your credentials.' }));
+        toast.error(errorData.message || 'Invalid email or password.');
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.token || !data.user) {
+        toast.error("Login failed: Invalid response from server.");
+        throw new Error("Invalid response structure from login API");
+      }
+
+      login(data.user, data.token);
+
       toast.success("Signed in successfully!");
       navigate("/profile");
+
+      console.log("Remember me:", rememberMe);
+
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Invalid email or password. Please try again.");
+      if (!(error instanceof Error && error.message.startsWith('HTTP error!'))) {
+        toast.error("An unexpected error occurred during login.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -67,6 +85,7 @@ const SignIn = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -87,6 +106,7 @@ const SignIn = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -95,6 +115,7 @@ const SignIn = () => {
                   id="remember" 
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  disabled={isLoading}
                 />
                 <label
                   htmlFor="remember"

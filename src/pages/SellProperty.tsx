@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Building, DollarSign, Home, MapPin, Bed, Bath, Square } from "lucide-react";
+import { Building, DollarSign, Home, MapPin, Bed, Bath, Square, ImagePlus, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 import Navbar from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import ImageUpload from "@/components/ImageUpload";
 
 // Form validation schema
 const formSchema = z.object({
@@ -45,13 +47,10 @@ const formSchema = z.object({
   price: z.string().min(1, "Price is required"),
   bedrooms: z.string().min(1, "Number of bedrooms is required"),
   bathrooms: z.string().min(1, "Number of bathrooms is required"),
-  squareFeet: z.string().min(1, "Square footage is required"),
   address: z.string().min(5, "Address must be at least 5 characters"),
   city: z.string().min(1, "City is required"),
   state: z.string().min(1, "State is required"),
   zipCode: z.string().min(5, "Zip code must be at least 5 characters"),
-  yearBuilt: z.string().optional(),
-  parkingSpots: z.string().optional(),
   amenities: z.string().optional(),
 });
 
@@ -60,8 +59,12 @@ type FormValues = z.infer<typeof formSchema>;
 const SellProperty = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, token } = useAuth();
   const [images, setImages] = useState<FileList | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Initialize form with default values
   const form = useForm<FormValues>({
@@ -73,51 +76,107 @@ const SellProperty = () => {
       price: "",
       bedrooms: "",
       bathrooms: "",
-      squareFeet: "",
       address: "",
       city: "",
       state: "",
       zipCode: "",
-      yearBuilt: "",
-      parkingSpots: "",
       amenities: "",
     },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setImages(e.target.files);
-      
-      // Simulate upload progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setUploadProgress(progress);
-        if (progress >= 100) {
-          clearInterval(interval);
-          toast({
-            title: "Images uploaded successfully",
-            description: `${e.target.files.length} images have been uploaded.`,
-          });
-        }
-      }, 300);
-    }
+  const handleImagesChange = (files: File[]) => {
+    setSelectedImages(files);
   };
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Form data submitted:", data);
-    console.log("Images:", images);
-    
-    // Show success toast
-    toast({
-      title: "Property listed successfully!",
-      description: "Your property has been listed for sale.",
-    });
-    
-    // Redirect to homepage after submission
-    setTimeout(() => {
+  const onSubmit = async (data: FormValues) => {
+    if (!token) {
+      toast({
+        variant: "destructive",
+        description: "Please sign in to list a property.",
+      });
+      navigate("/signin");
+      return;
+    }
+
+    if (selectedImages.length === 0) {
+      toast({
+        variant: "destructive",
+        description: "Please add at least one image of the property.",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      
+      // Append images
+      selectedImages.forEach((image) => {
+        formData.append('images', image);
+      });
+
+      // Format the data according to the server's expectations
+      const propertyData = {
+        title: data.title,
+        description: data.description,
+        propertyType: data.propertyType,
+        price: parseFloat(data.price),
+        bedrooms: parseInt(data.bedrooms),
+        bathrooms: parseInt(data.bathrooms),
+        location: {
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zipCode: data.zipCode
+        },
+        amenities: data.amenities ? data.amenities.split(',').map(item => item.trim()) : []
+      };
+
+      // Append the formatted data
+      Object.entries(propertyData).forEach(([key, value]) => {
+        if (key === 'location') {
+          Object.entries(value).forEach(([locationKey, locationValue]) => {
+            formData.append(`location[${locationKey}]`, locationValue as string);
+          });
+        } else if (key === 'amenities') {
+          (value as string[]).forEach((amenity, index) => {
+            formData.append(`amenities[${index}]`, amenity);
+          });
+        } else {
+          formData.append(key, value.toString());
+        }
+      });
+
+      const response = await fetch('http://localhost:5000/api/rent', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create listing');
+      }
+
+      const result = await response.json();
+      
+      toast({
+        description: "Your property has been listed for rent.",
+      });
+      
       navigate("/");
-    }, 2000);
+    } catch (error) {
+      console.error('Error creating listing:', error);
+      toast({
+        variant: "destructive",
+        description: error instanceof Error ? error.message : "Failed to create listing",
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -125,7 +184,7 @@ const SellProperty = () => {
       <Navbar />
       
       <main className="container mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold text-center mb-8">List Your Property for Sale</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">List Your Property for Rent</h1>
         
         <Card className="max-w-4xl mx-auto">
           <CardHeader>
@@ -138,14 +197,6 @@ const SellProperty = () => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Basic Information */}
-                  <div className="md:col-span-2">
-                    <h3 className="font-semibold text-lg mb-4 flex items-center">
-                      <Home className="mr-2 h-5 w-5 text-realestate-600" />
-                      Basic Information
-                    </h3>
-                  </div>
-                  
                   <FormField
                     control={form.control}
                     name="title"
@@ -173,12 +224,12 @@ const SellProperty = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="house">House</SelectItem>
                             <SelectItem value="apartment">Apartment</SelectItem>
+                            <SelectItem value="house">House</SelectItem>
                             <SelectItem value="condo">Condo</SelectItem>
                             <SelectItem value="townhouse">Townhouse</SelectItem>
-                            <SelectItem value="land">Land</SelectItem>
-                            <SelectItem value="commercial">Commercial</SelectItem>
+                            <SelectItem value="studio">Studio</SelectItem>
+                            <SelectItem value="loft">Loft</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -205,40 +256,16 @@ const SellProperty = () => {
                   />
                   
                   {/* Property Details */}
-                  <div className="md:col-span-2">
-                    <h3 className="font-semibold text-lg mb-4 mt-4 flex items-center">
-                      <Building className="mr-2 h-5 w-5 text-realestate-600" />
-                      Property Details
-                    </h3>
-                  </div>
-                  
                   <FormField
                     control={form.control}
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Price ($)</FormLabel>
+                        <FormLabel>Monthly Rent ($)</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <DollarSign className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                            <Input className="pl-10" placeholder="e.g. 450000" {...field} />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="squareFeet"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Square Feet</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Square className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                            <Input className="pl-10" placeholder="e.g. 1500" {...field} />
+                            <Input type="number" className="pl-10" placeholder="e.g. 1500" {...field} />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -255,7 +282,7 @@ const SellProperty = () => {
                         <FormControl>
                           <div className="relative">
                             <Bed className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                            <Input className="pl-10" placeholder="e.g. 3" {...field} />
+                            <Input type="number" className="pl-10" placeholder="e.g. 2" {...field} />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -272,7 +299,7 @@ const SellProperty = () => {
                         <FormControl>
                           <div className="relative">
                             <Bath className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                            <Input className="pl-10" placeholder="e.g. 2" {...field} />
+                            <Input type="number" className="pl-10" placeholder="e.g. 1" {...field} />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -280,42 +307,7 @@ const SellProperty = () => {
                     )}
                   />
                   
-                  <FormField
-                    control={form.control}
-                    name="yearBuilt"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Year Built</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. 2015" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="parkingSpots"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Parking Spots</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. 2" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
                   {/* Location Information */}
-                  <div className="md:col-span-2">
-                    <h3 className="font-semibold text-lg mb-4 mt-4 flex items-center">
-                      <MapPin className="mr-2 h-5 w-5 text-realestate-600" />
-                      Location
-                    </h3>
-                  </div>
-                  
                   <FormField
                     control={form.control}
                     name="address"
@@ -393,10 +385,6 @@ const SellProperty = () => {
                   />
                   
                   {/* Amenities */}
-                  <div className="md:col-span-2">
-                    <h3 className="font-semibold text-lg mb-4 mt-4">Amenities</h3>
-                  </div>
-                  
                   <FormField
                     control={form.control}
                     name="amenities"
@@ -417,60 +405,13 @@ const SellProperty = () => {
                     )}
                   />
                   
-                  {/* Photo Upload */}
+                  {/* Image Upload Section */}
                   <div className="md:col-span-2">
-                    <h3 className="font-semibold text-lg mb-4 mt-4">Property Photos</h3>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <input
-                        type="file"
-                        id="property-images"
-                        multiple
-                        className="hidden"
-                        onChange={handleImageChange}
-                        accept="image/*"
-                      />
-                      <label
-                        htmlFor="property-images"
-                        className="cursor-pointer flex flex-col items-center justify-center gap-2"
-                      >
-                        <svg
-                          className="w-12 h-12 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          ></path>
-                        </svg>
-                        <span className="text-gray-600">
-                          {images
-                            ? `${images.length} files selected`
-                            : "Click to upload property images"}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          (Maximum 10 images, JPEG or PNG format)
-                        </span>
-                      </label>
-                      
-                      {uploadProgress > 0 && uploadProgress < 100 && (
-                        <div className="mt-4">
-                          <div className="w-full bg-gray-200 rounded-full h-2.5">
-                            <div
-                              className="bg-realestate-600 h-2.5 rounded-full"
-                              style={{ width: `${uploadProgress}%` }}
-                            ></div>
-                          </div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Uploading... {uploadProgress}%
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                    <ImageUpload 
+                      onImagesChange={handleImagesChange}
+                      maxImages={10}
+                      disabled={isUploading}
+                    />
                   </div>
                 </div>
                 
@@ -485,8 +426,9 @@ const SellProperty = () => {
                   <Button
                     type="submit"
                     className="bg-realestate-600 hover:bg-realestate-700"
+                    disabled={isUploading}
                   >
-                    List Property
+                    {isUploading ? "Creating Listing..." : "List Property"}
                   </Button>
                 </div>
               </form>
