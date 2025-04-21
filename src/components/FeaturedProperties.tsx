@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import PropertyCard, { PropertyCardProps } from "./PropertyCard";
+import PropertyCard, { Property } from "./PropertyCard";
 import { Loader2 } from "lucide-react";
 
 const FeaturedProperties = () => {
-  const [properties, setProperties] = useState<PropertyCardProps[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -20,18 +20,19 @@ const FeaturedProperties = () => {
 
         const data = await response.json();
         
-        // Transform the API data to match PropertyCard props
+        // Transform the API data to match Property interface
         const transformedProperties = data.map((property: any) => ({
-          id: property._id,
+          _id: property._id,
           title: property.title,
-          address: `${property.location.address}, ${property.location.city}, ${property.location.state} ${property.location.zipCode}`,
+          description: property.description,
           price: property.price,
+          location: property.location,
+          propertyType: property.propertyType,
           bedrooms: property.bedrooms,
           bathrooms: property.bathrooms,
-          area: property.squareFeet,
-          imageUrl: property.images?.[0] || "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3",
-          propertyType: property.propertyType,
-          listingType: "rent"
+          amenities: property.amenities,
+          images: property.images,
+          status: property.status
         }));
 
         setProperties(transformedProperties);
@@ -61,6 +62,7 @@ const FeaturedProperties = () => {
     );
   }
 
+  
   if (error) {
     return (
       <div className="py-16 bg-gray-50">
@@ -83,7 +85,7 @@ const FeaturedProperties = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {properties.map((property) => (
-            <PropertyCard key={property.id} {...property} />
+            <PropertyCard key={property._id} property={property} />
           ))}
         </div>
         

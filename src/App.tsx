@@ -13,6 +13,7 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import SellProperty from "./pages/SellProperty";
 import NotFound from "./pages/NotFound";
+import Properties from "./pages/Properties";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
             <Route path="/property/:id" element={<PropertyDetails />} />
+            <Route path="/properties" element={<Properties />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/register" element={<Register />} />
 

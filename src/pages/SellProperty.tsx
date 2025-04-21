@@ -4,14 +4,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Building, DollarSign, Home, MapPin, Bed, Bath, Square, ImagePlus, X } from "lucide-react";
+import { DollarSign, Home, MapPin, Bed, Bath, Square, ImagePlus, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 import Navbar from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -157,8 +156,17 @@ const SellProperty = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create listing');
+        const contentType = response.headers.get("content-type");
+        let errorMessage;
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          errorMessage = errorData.message || 'Failed to create listing';
+        } else {
+          const textError = await response.text();
+          console.error('Server error response:', textError);
+          errorMessage = `Server error (${response.status}): Please try again later`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();

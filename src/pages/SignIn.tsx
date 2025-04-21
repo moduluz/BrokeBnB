@@ -50,6 +50,7 @@ const SignIn = () => {
       }
 
       login(data.user, data.token);
+      console.log("Calling login with:", data.user, data.token);
 
       toast.success("Signed in successfully!");
       navigate("/profile");

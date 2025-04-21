@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Bed, Bath, Building, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 
-interface Property {
+export interface Property {
   _id: string;
   title: string;
   description: string;
@@ -25,7 +25,7 @@ interface Property {
   status: string;
 }
 
-interface PropertyCardProps {
+export interface PropertyCardProps {
   property: Property;
 }
 
