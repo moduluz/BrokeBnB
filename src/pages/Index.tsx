@@ -18,7 +18,7 @@ const Index = () => {
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Why Choose RentHomeHub</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Why Choose BrokeBNB</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
                 We provide a seamless experience for buying, selling, and renting properties with trusted service.
               </p>
@@ -80,7 +80,7 @@ const Index = () => {
                 Ready to Find Your Dream Home?
               </h2>
               <p className="text-xl text-white/90 mb-8">
-                Join thousands of satisfied customers who found their perfect property with RentHomeHub.
+                Join thousands of satisfied customers who found their perfect property with BrokeBNB.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button className="px-8 py-3 bg-white text-realestate-600 font-medium rounded-lg hover:bg-gray-100 transition-colors">
@@ -100,7 +100,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">RentHomeHub</h3>
+              <h3 className="text-xl font-bold mb-4">BrokeBNB</h3>
               <p className="text-gray-400">
                 Your trusted partner in finding the perfect property for your needs.
               </p>
@@ -132,13 +132,13 @@ const Index = () => {
                 1234 Real Estate Blvd<br />
                 San Francisco, CA 94105<br />
                 <a href="tel:+11234567890" className="hover:text-white">+1 (123) 456-7890</a><br />
-                <a href="mailto:info@renthomehub.com" className="hover:text-white">info@renthomehub.com</a>
+                <a href="mailto:info@BrokeBNB.com" className="hover:text-white">info@BrokeBNB.com</a>
               </address>
             </div>
           </div>
           
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 RentHomeHub. All rights reserved.</p>
+            <p>&copy; 2025 BrokeBNB. All rights reserved.</p>
           </div>
         </div>
       </footer>
