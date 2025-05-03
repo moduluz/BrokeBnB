@@ -42,11 +42,12 @@ const Properties = () => {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/rent");
+        const response = await fetch("http://localhost:5000/api/rent?status=available");
         if (!response.ok) throw new Error("Failed to fetch properties");
         const data = await response.json();
         setProperties(data);
       } catch (error) {
+        console.error("Error fetching properties:", error);
         setProperties([]);
       } finally {
         setLoading(false);
@@ -106,7 +107,18 @@ const Properties = () => {
                         <Bath className="w-4 h-4" /> {property.bathrooms}
                       </span>
                       <span className="flex items-center gap-1 text-gray-600">
-                        <DollarSign className="w-4 h-4" /> {property.price}
+                        <DollarSign className="w-4 h-4" /> {property.price.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        property.status === 'available' 
+                          ? 'bg-green-100 text-green-800'
+                          : property.status === 'sold'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {property.status.charAt(0).toUpperCase() + property.status.slice(1)}
                       </span>
                     </div>
                   </div>
@@ -121,3 +133,4 @@ const Properties = () => {
 };
 
 export default Properties;
+
