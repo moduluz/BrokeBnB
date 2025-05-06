@@ -1,116 +1,154 @@
-BrokeBnB - Decentralized Property Rental Platform
-BrokeBnB is a modern web3 application for budget-friendly property rentals, built with the MERN stack (MongoDB, Express.js, React, Node.js), TypeScript, and Solidity smart contracts for secure, decentralized transactions.
-Overview
-BrokeBnB enables users to list, browse, and book properties with a focus on affordability, leveraging Ethereum blockchain for transparent and secure rental agreements. The application features a responsive UI, robust backend APIs, and smart contract integration, showcasing full stack and web3 development skills.
-Project Structure
-├── contracts/                 # Solidity smart contracts
-│   └── PropertyMarket.sol    # Core rental contract
-├── src/                      # Frontend source code
-│   ├── components/           # Reusable React components
-│   ├── contexts/            # React context providers
-│   ├── hooks/               # Custom React hooks
-│   ├── lib/                 # Utility functions
-│   ├── pages/               # Page components
-│   ├── App.tsx             # Main app component
-│   └── main.tsx            # App entry point
-├── server/                  # Backend Express.js code
-├── public/                  # Static assets
-└── configuration files      # Vite, TypeScript, Tailwind configs
+# BrokeBnB - Decentralized Property Rental Platform
 
-Technologies Used
+A modern Web3 application for property rentals built with React, TypeScript, and Solidity smart contracts.
 
-Frontend:
+---
 
-React 18
-TypeScript
-Vite
-Tailwind CSS
-shadcn/ui components
-React Router DOM
-React Query
-React Hook Form with Zod
+## Project Structure
 
+```
+BrokeBnB/
+├── contracts/                 # Smart contracts
+│   └── PropertyMarket.sol     # Main property rental contract
+├── src/                       # Frontend source code
+│   ├── components/            # Reusable React components
+│   ├── contexts/              # React context providers
+│   ├── hooks/                 # Custom React hooks
+│   ├── lib/                   # Utility functions and configurations
+│   ├── pages/                 # Page components
+│   ├── App.tsx                # Main application component
+│   └── main.tsx               # Application entry point
+├── server/                    # Backend server code
+├── public/                    # Static assets
+└── configuration files        # Various config files for the project
+```
 
-Backend:
+---
 
-Express.js
-MongoDB with Mongoose
-JWT Authentication
-bcrypt for password hashing
+## Technologies Used
 
+### Frontend
 
-Blockchain:
+* React 18
+* TypeScript
+* Vite
+* Tailwind CSS
+* [shadcn/ui](https://ui.shadcn.com/) components
+* React Router DOM
+* React Query
+* React Hook Form with Zod validation
 
-Solidity
-Ethereum blockchain
+### Backend
 
+* Express.js
+* MongoDB with Mongoose
+* JWT Authentication
+* bcrypt for password hashing
 
+### Smart Contracts
 
-Features
+* Solidity
+* Ethereum blockchain integration
 
-Property listing, search, and booking
-Secure user authentication and authorization
-Decentralized transactions via smart contracts
-Responsive, modern UI with shadcn/ui
-Form validation with React Hook Form and Zod
-Real-time data updates with React Query
-Scalable backend with MongoDB
+---
 
-Getting Started
-Prerequisites
+## Getting Started
 
-Node.js (LTS version)
-npm or bun
-MongoDB (local or cloud)
-MetaMask or Web3 wallet
-Git
+### Prerequisites
 
-Installation
+* Node.js (Latest LTS version recommended)
+* npm or bun package manager
+* MetaMask or similar Web3 wallet
+* MongoDB (for local development)
+
+### Installation
 
 Clone the repository:
 
-git clone https://github.com/moduluz/BrokeBnB.git
+```bash
+git clone <repository-url>
 cd BrokeBnB
-
+```
 
 Install dependencies:
 
+```bash
 npm install
 # or
 bun install
+```
 
+Set up environment variables:
+Create a `.env` file in the root directory with the following variables:
 
-Configure environment variables:Create a .env file in the root directory:
-
+```env
 MONGODB_URI=your_mongodb_uri
 JWT_SECRET=your_jwt_secret
+```
 
+Start the development server:
 
-Run the development server:
-
+```bash
 npm run dev
 # or
 bun dev
+```
 
-Available Scripts
+---
 
-npm run dev: Start development server
-npm run build: Build for production
-npm run lint: Run ESLint
-npm run preview: Preview production build
+## Available Scripts
 
-Contributing
-Contributions are welcome! To contribute:
+* `npm run dev` - Start development server
+* `npm run build` - Build for production
+* `npm run build:dev` - Build for development
+* `npm run lint` - Run ESLint
+* `npm run preview` - Preview production build
 
-Fork the repository.
-Create a feature branch (git checkout -b feature/your-feature).
-Commit changes (git commit -m 'Add your feature').
-Push to the branch (git push origin feature/your-feature).
-Open a Pull Request.
+---
 
-License
-Licensed under the MIT License. See the LICENSE file for details.
-Contact
-For questions or support, open an issue or contact Aditya Singh Khichi at adityakhichi2003@gmail.com.
-Acknowledgments
-Built by Aditya Singh Khichi as part of a full stack and web3 learning journey. Check out more projects at https://keen-entremet-407b9a.netlify.app/.
+## Features
+
+* Property listing and management
+* User authentication and authorization
+* Smart contract integration for secure transactions
+* Responsive and modern UI with shadcn/ui
+* Form validation with React Hook Form and Zod
+* State management with React Query
+* Real-time updates and notifications
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch:
+
+```bash
+git checkout -b feature/amazing-feature
+```
+
+3. Commit your changes:
+
+```bash
+git commit -m "Add some amazing feature"
+```
+
+4. Push to the branch:
+
+```bash
+git push origin feature/amazing-feature
+```
+
+5. Open a Pull Request
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Support
+
+For support, please open an issue in the GitHub repository or contact the development team.
