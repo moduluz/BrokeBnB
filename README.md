@@ -1,73 +1,116 @@
-# YO!!!
+BrokeBnB - Decentralized Property Rental Platform
+BrokeBnB is a modern web3 application for budget-friendly property rentals, built with the MERN stack (MongoDB, Express.js, React, Node.js), TypeScript, and Solidity smart contracts for secure, decentralized transactions.
+Overview
+BrokeBnB enables users to list, browse, and book properties with a focus on affordability, leveraging Ethereum blockchain for transparent and secure rental agreements. The application features a responsive UI, robust backend APIs, and smart contract integration, showcasing full stack and web3 development skills.
+Project Structure
+├── contracts/                 # Solidity smart contracts
+│   └── PropertyMarket.sol    # Core rental contract
+├── src/                      # Frontend source code
+│   ├── components/           # Reusable React components
+│   ├── contexts/            # React context providers
+│   ├── hooks/               # Custom React hooks
+│   ├── lib/                 # Utility functions
+│   ├── pages/               # Page components
+│   ├── App.tsx             # Main app component
+│   └── main.tsx            # App entry point
+├── server/                  # Backend Express.js code
+├── public/                  # Static assets
+└── configuration files      # Vite, TypeScript, Tailwind configs
 
-## Project info
+Technologies Used
 
-**URL**: https://lovable.dev/projects/9cab4a85-0c63-487f-adc9-b3d878049b91
+Frontend:
 
-## How can I edit this code?
+React 18
+TypeScript
+Vite
+Tailwind CSS
+shadcn/ui components
+React Router DOM
+React Query
+React Hook Form with Zod
 
-There are several ways of editing your application.
 
-**Use Lovable**
+Backend:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9cab4a85-0c63-487f-adc9-b3d878049b91) and start prompting.
+Express.js
+MongoDB with Mongoose
+JWT Authentication
+bcrypt for password hashing
 
-Changes made via Lovable will be committed automatically to this repo.
 
-**Use your preferred IDE**
+Blockchain:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Solidity
+Ethereum blockchain
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Features
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Property listing, search, and booking
+Secure user authentication and authorization
+Decentralized transactions via smart contracts
+Responsive, modern UI with shadcn/ui
+Form validation with React Hook Form and Zod
+Real-time data updates with React Query
+Scalable backend with MongoDB
 
-# Step 3: Install the necessary dependencies.
-npm i
+Getting Started
+Prerequisites
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Node.js (LTS version)
+npm or bun
+MongoDB (local or cloud)
+MetaMask or Web3 wallet
+Git
+
+Installation
+
+Clone the repository:
+
+git clone https://github.com/moduluz/BrokeBnB.git
+cd BrokeBnB
+
+
+Install dependencies:
+
+npm install
+# or
+bun install
+
+
+Configure environment variables:Create a .env file in the root directory:
+
+MONGODB_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+
+
+Run the development server:
+
 npm run dev
-```
+# or
+bun dev
 
-**Edit a file directly in GitHub**
+Available Scripts
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+npm run dev: Start development server
+npm run build: Build for production
+npm run lint: Run ESLint
+npm run preview: Preview production build
 
-**Use GitHub Codespaces**
+Contributing
+Contributions are welcome! To contribute:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Fork the repository.
+Create a feature branch (git checkout -b feature/your-feature).
+Commit changes (git commit -m 'Add your feature').
+Push to the branch (git push origin feature/your-feature).
+Open a Pull Request.
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/9cab4a85-0c63-487f-adc9-b3d878049b91) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+License
+Licensed under the MIT License. See the LICENSE file for details.
+Contact
+For questions or support, open an issue or contact Aditya Singh Khichi at adityakhichi2003@gmail.com.
+Acknowledgments
+Built by Aditya Singh Khichi as part of a full stack and web3 learning journey. Check out more projects at https://keen-entremet-407b9a.netlify.app/.
