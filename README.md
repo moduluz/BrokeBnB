@@ -66,7 +66,7 @@ BrokeBnB/
 Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone <https://github.com/moduluz/BrokeBnB>
 cd BrokeBnB
 ```
 
